@@ -21,14 +21,14 @@ var rows = 0
 func main() {
 	//db := openConn()
 
-	lines := strings.Split(csvDataFile.CsvData, " ")
+	lines := strings.Split(csvDataFile.CsvData, ":")
 	for _, line := range lines {
 		rows = rows + 1
 		if line == "" || rows == 1 {
 			continue
 		}
 		columns := strings.Split(line, ";")
-		fmt.Printf("el columns es : %v %v", uuid.New(), uuid.New())
+		//fmt.Printf("el columns es : %v %v", uuid.New(), uuid.New())
 		userId, err := uuid.Parse(columns[0])
 
 		if err != nil {
