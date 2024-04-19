@@ -15,28 +15,26 @@ import (
 	csvDataFile "sendEmails/csv"
 )
 
-var layout = "2006/01/02"
-var rows = 0
+const layout = "2006/01/02"
 
 func main() {
 	//db := openConn()
-
-	lines := strings.Split(csvDataFile.CsvData, ":")
+	rows := 0
+	lines := strings.Split(csvDataFile.CsvData, "\r\n")
 	for _, line := range lines {
 		rows = rows + 1
 		if line == "" || rows == 1 {
 			continue
 		}
 		columns := strings.Split(line, ";")
-		//fmt.Printf("el columns es : %v %v", uuid.New(), uuid.New())
 		userId, err := uuid.Parse(columns[0])
 
 		if err != nil {
-			log.Fatalf("Error, invalid uuid : %v %v", columns[0], err)
+			log.Fatalf("Error, invalid user uuid : %v %v", columns[0], err)
 		}
 		txId, err := uuid.Parse(columns[1])
 		if err != nil {
-			log.Fatalf("Error, invalid uuid : %v %v", columns[1], err)
+			log.Fatalf("Error, invalid tx uuid : %v %v", columns[1], err)
 		}
 		date, err := time.Parse(layout, columns[2])
 		if err != nil {
@@ -46,7 +44,7 @@ func main() {
 		if strings.HasPrefix(columns[3], "+") {
 			monto, err := obtenerMonto(columns[3])
 			if err != nil {
-				log.Printf("Error al procesar el monto: %v", err)
+				log.Print(err)
 				continue
 			}
 			credit := monto
@@ -57,7 +55,7 @@ func main() {
 		} else if strings.HasPrefix(columns[3], "-") {
 			monto, err := obtenerMonto(columns[3])
 			if err != nil {
-				log.Printf("Error al procesar el monto: %v", err)
+				log.Print(err)
 				continue
 			}
 			debit := monto
