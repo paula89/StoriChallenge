@@ -10,46 +10,62 @@ import (
 	"strings"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
-
 	csvDataFile "sendEmails/csv"
 )
 
-var layout = "2006-01-02"
+var layout = "2006/01/02"
+var rows = 0
 
 func main() {
-	db := openConn()
+	//db := openConn()
 
-	lines := strings.Split(csvDataFile.CsvData, ";")
+	lines := strings.Split(csvDataFile.CsvData, " ")
 	for _, line := range lines {
-		if line == "" {
+		rows = rows + 1
+		if line == "" || rows == 1 {
 			continue
 		}
-		userId := line[:1]
-		txId := line[:2]
-		date, err := time.Parse(layout, line[:3])
+		columns := strings.Split(line, ";")
+		fmt.Printf("el columns es : %v %v", uuid.New(), uuid.New())
+		userId, err := uuid.Parse(columns[0])
+
+		if err != nil {
+			log.Fatalf("Error, invalid uuid : %v %v", columns[0], err)
+		}
+		txId, err := uuid.Parse(columns[1])
+		if err != nil {
+			log.Fatalf("Error, invalid uuid : %v %v", columns[1], err)
+		}
+		date, err := time.Parse(layout, columns[2])
 		if err != nil {
 			log.Fatalf("Error al parsear la fecha: %v", err)
 		}
 
-		if strings.HasPrefix(line, "+") {
-			monto, err := obtenerMonto(line[1:])
+		if strings.HasPrefix(columns[3], "+") {
+			monto, err := obtenerMonto(columns[3])
 			if err != nil {
 				log.Printf("Error al procesar el monto: %v", err)
 				continue
 			}
 			credit := monto
-			saveTransaction(db, uuid.MustParse(userId), uuid.MustParse(txId), date, 0, credit)
+			fmt.Printf("el saldo es : %v %v %v %v %v", userId, txId, date, 0, credit)
 
-		} else if strings.HasPrefix(line, "-") {
-			monto, err := obtenerMonto(line[1:])
+			//saveTransaction(db, uuid.MustParse(userId), uuid.MustParse(txId), date, 0, credit)
+
+		} else if strings.HasPrefix(columns[3], "-") {
+			monto, err := obtenerMonto(columns[3])
 			if err != nil {
 				log.Printf("Error al procesar el monto: %v", err)
 				continue
 			}
 			debit := monto
-			saveTransaction(db, uuid.MustParse(userId), uuid.MustParse(txId), date, debit, 0)
+			fmt.Printf("el saldo es : %v %v %v %v %v", userId, txId, date, debit, 0)
+
+			//saveTransaction(db, uuid.MustParse(userId), uuid.MustParse(txId), date, debit, 0)
 		}
+
 	}
 
 	// Calcular el saldo final
@@ -66,10 +82,11 @@ func main() {
 	*/
 }
 
-func obtenerMonto(s string) (float64, error) {
-	monto, err := strconv.ParseFloat(s, 64)
+func obtenerMonto(transaction string) (float64, error) {
+	tx := transaction[1:len(transaction)]
+	monto, err := strconv.ParseFloat(tx, 64)
 	if err != nil {
-		return 0, fmt.Errorf("no se pudo convertir el monto %s: %w", s, err)
+		return 0, fmt.Errorf("no se pudo convertir el monto %s: %w", transaction, err)
 	}
 	//math.Round()
 	return monto, nil
@@ -96,7 +113,8 @@ func saveTxInDb(db *sql.DB, UserId, TxId uuid.UUID, Date time.Time, Debit, Credi
 
 func openConn() *sql.DB {
 	// Abrir la conexión a la base de datos MySQL
-	db, err := sql.Open("mysql", "database-stori.cpy4qmq0clr0.us-east-2.rds.amazonaws.com:3306/transactions")
+
+	db, err := sql.Open("mysql", "admin:Stori2024!!@tcp(rds-mysql.database-stori.cpy4qmq0clr0.us-east-2.rds.amazonaws.com:3306)/transactions")
 	if err != nil {
 		log.Fatalf("Error al conectar a la base de datos: %v", err)
 	}
