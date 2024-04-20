@@ -1,24 +1,22 @@
 package main
 
 import (
-	"database/sql"
-	_ "embed"
-	"encoding/csv"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
+	"sendEmails/calculations"
 	csvDataFile "sendEmails/csv"
+	"sendEmails/db"
 )
 
 const layout = "2006/01/02"
 
 func main() {
-	//db := openConn()
+	conn := db.OpenConn()
 	rows := 0
 	lines := strings.Split(csvDataFile.CsvData, "\r\n")
 	for _, line := range lines {
@@ -42,26 +40,26 @@ func main() {
 		}
 
 		if strings.HasPrefix(columns[3], "+") {
-			monto, err := obtenerMonto(columns[3])
+			monto, err := calculations.ObtenerMonto(columns[3])
 			if err != nil {
 				log.Print(err)
 				continue
 			}
 			credit := monto
-			fmt.Printf("el saldo es : %v %v %v %v %v", userId, txId, date, 0, credit)
+			fmt.Printf("el saldo es : %v %v %v %v %v \n", userId, txId, date, 0, credit)
 
-			//saveTransaction(db, uuid.MustParse(userId), uuid.MustParse(txId), date, 0, credit)
+			db.SaveTransaction(conn, userId, txId, date, 0, credit)
 
 		} else if strings.HasPrefix(columns[3], "-") {
-			monto, err := obtenerMonto(columns[3])
+			monto, err := calculations.ObtenerMonto(columns[3])
 			if err != nil {
 				log.Print(err)
 				continue
 			}
 			debit := monto
-			fmt.Printf("el saldo es : %v %v %v %v %v", userId, txId, date, debit, 0)
+			fmt.Printf("el saldo es : %v %v %v %v %v\n", userId, txId, date, debit, 0)
 
-			//saveTransaction(db, uuid.MustParse(userId), uuid.MustParse(txId), date, debit, 0)
+			//saveTransaction(conn, uuid.MustParse(userId), uuid.MustParse(txId), date, debit, 0)
 		}
 
 	}
@@ -78,57 +76,4 @@ func main() {
 		}
 
 	*/
-}
-
-func obtenerMonto(transaction string) (float64, error) {
-	tx := transaction[1:len(transaction)]
-	monto, err := strconv.ParseFloat(tx, 64)
-	if err != nil {
-		return 0, fmt.Errorf("no se pudo convertir el monto %s: %w", transaction, err)
-	}
-	//math.Round()
-	return monto, nil
-}
-
-func enviarResumenPorCorreo(creditos, debitos, saldo float64) error {
-	// Aquí iría la lógica para enviar el correo electrónico con el resumen
-	fmt.Printf("Resumen de transacciones procesadas. Créditos: %.2f, Débitos: %.2f, Saldo final: %.2f\n", creditos, debitos, saldo)
-	return nil
-}
-
-func saveTransaction(db *sql.DB, UserId, TxId uuid.UUID, Date time.Time, Debit, Credit float64) {
-	// Guardar información en la base de datos MySQL
-	err := saveTxInDb(db, UserId, TxId, Date, Debit, Credit)
-	if err != nil {
-		log.Fatalf("Error al guardar transacciones en la base de datos: %v", err)
-	}
-}
-
-func saveTxInDb(db *sql.DB, UserId, TxId uuid.UUID, Date time.Time, Debit, Credit float64) error {
-	_, err := db.Exec("INSERT INTO transactions (Id, UserId, Date, Debit, Credit) VALUES (?, ?, ?)", TxId, UserId, Date, Debit, Credit)
-	return err
-}
-
-func openConn() *sql.DB {
-	// Abrir la conexión a la base de datos MySQL
-
-	db, err := sql.Open("mysql", "admin:Stori2024!!@tcp(rds-mysql.database-stori.cpy4qmq0clr0.us-east-2.rds.amazonaws.com:3306)/transactions")
-	if err != nil {
-		log.Fatalf("Error al conectar a la base de datos: %v", err)
-	}
-	defer db.Close()
-	return db
-}
-
-func loadCsv() {
-	r := csv.NewReader(strings.NewReader(csvDataFile.CsvData))
-	records, err := r.ReadAll()
-	if err != nil {
-		log.Fatalf("Error al leer el archivo CSV: %v", err)
-	}
-
-	for _, row := range records {
-		fmt.Println(row)
-	}
-
 }
