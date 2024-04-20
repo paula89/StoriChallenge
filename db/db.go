@@ -17,7 +17,7 @@ func SaveTransaction(db *sql.DB, UserId, TxId uuid.UUID, Date time.Time, Debit, 
 }
 
 func saveTxInDb(db *sql.DB, UserId, TxId uuid.UUID, Date time.Time, Debit, Credit float64) error {
-	_, err := db.Exec("INSERT INTO transactions (Id, UserId, Date, Debit, Credit) VALUES (?, ?, ?)", TxId, UserId, Date, Debit, Credit)
+	_, err := db.Exec("INSERT INTO transactions (Id, UserId, CreationDate, Debit, Credit) VALUES (?, ?, ?)", TxId, UserId, Date, Debit, Credit)
 	return err
 }
 

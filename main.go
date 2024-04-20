@@ -19,6 +19,11 @@ var dataTransactions csvDataFile.DataTransactions
 func main() {
 	conn := db.OpenConn()
 	rows := 0
+	totalBalance := 0.0
+	numTransactionsByMonth := make(map[string]int)
+	avgCreditByMonth := make(map[string]float64)
+	avgDebitByMonth := make(map[string]float64)
+
 	lines := strings.Split(csvDataFile.CsvData, "\r\n")
 	for _, line := range lines {
 		rows = rows + 1
@@ -42,7 +47,7 @@ func main() {
 			log.Fatalf("Error al parsear la fecha: %v", err)
 		}
 		dataTransactions.CreationDate = date
-
+		numTransactionsByMonth[date.Month().String()]++
 		if strings.HasPrefix(columns[3], "+") {
 			monto, err := calculations.ObtenerMonto(columns[3])
 			if err != nil {
@@ -51,6 +56,8 @@ func main() {
 			}
 			dataTransactions.Transaction.Credit = monto
 			dataTransactions.Transaction.Debit = 0
+			totalBalance += monto
+			avgCreditByMonth[date.Month().String()] += monto
 			//fmt.Printf("el saldo es : %v %v %v %v %v \n", userId, txId, date, 0, credit)
 
 			db.SaveTransaction(conn, dataTransactions.UserId, dataTransactions.Id, dataTransactions.CreationDate, dataTransactions.Transaction.Debit, dataTransactions.Transaction.Credit)
@@ -63,16 +70,20 @@ func main() {
 			}
 			dataTransactions.Transaction.Credit = 0
 			dataTransactions.Transaction.Debit = monto
+			totalBalance -= monto
+			avgDebitByMonth[date.Month().String()] -= monto
 			//fmt.Printf("el saldo es : %v %v %v %v %v\n", userId, txId, date, debit, 0)
 
 			//db.SaveTransaction(conn, dataTransactions.UserId, dataTransactions.Id, dataTransactions.CreationDate, dataTransactions.Transaction.Debit, dataTransactions.Transaction.Credit)
 		}
 
-	}
+		// Calcular promedios de débitos y créditos por mes
+		for month := range numTransactionsByMonth {
+			avgCreditByMonth[month] /= float64(numTransactionsByMonth[month])
+			avgDebitByMonth[month] /= float64(numTransactionsByMonth[month])
+		}
 
-	// Calcular el saldo final
-	//saldo := creditos - debitos
-	//fmt.Printf("el saldo es : %v", saldo)
+	}
 
 	/*
 		// Enviar resumen por correo electrónico
