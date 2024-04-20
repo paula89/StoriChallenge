@@ -15,7 +15,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: Stori2024!!
-      MYSQL_DATABASE: Transactions
+      MYSQL_DATABASE: StoriChallenge
     networks:
       - app-network-public
     ports:

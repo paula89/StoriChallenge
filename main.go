@@ -44,7 +44,7 @@ func main() {
 
 		date, err := time.Parse(layout, columns[2])
 		if err != nil {
-			log.Fatalf("Error al parsear la fecha: %v", err)
+			log.Fatalf("Error parsing date: %v", err)
 		}
 		dataTransactions.CreationDate = date
 		numTransactionsByMonth[date.Month().String()]++

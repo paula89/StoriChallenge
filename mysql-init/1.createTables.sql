@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS
               CreationDate  date        NOT NULL
               Debit         double      NOT NULL
               Credit        double      NOT NULL
-       )
+       );
 
