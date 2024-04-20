@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -15,6 +14,8 @@ import (
 
 const layout = "2006/01/02"
 
+var dataTransactions csvDataFile.DataTransactions
+
 func main() {
 	conn := db.OpenConn()
 	rows := 0
@@ -26,18 +27,21 @@ func main() {
 		}
 		columns := strings.Split(line, ";")
 		userId, err := uuid.Parse(columns[0])
-
 		if err != nil {
 			log.Fatalf("Error, invalid user uuid : %v %v", columns[0], err)
 		}
+		dataTransactions.UserId = userId
 		txId, err := uuid.Parse(columns[1])
 		if err != nil {
 			log.Fatalf("Error, invalid tx uuid : %v %v", columns[1], err)
 		}
+		dataTransactions.Id = txId
+
 		date, err := time.Parse(layout, columns[2])
 		if err != nil {
 			log.Fatalf("Error al parsear la fecha: %v", err)
 		}
+		dataTransactions.CreationDate = date
 
 		if strings.HasPrefix(columns[3], "+") {
 			monto, err := calculations.ObtenerMonto(columns[3])
@@ -45,10 +49,11 @@ func main() {
 				log.Print(err)
 				continue
 			}
-			credit := monto
-			fmt.Printf("el saldo es : %v %v %v %v %v \n", userId, txId, date, 0, credit)
+			dataTransactions.Transaction.Credit = monto
+			dataTransactions.Transaction.Debit = 0
+			//fmt.Printf("el saldo es : %v %v %v %v %v \n", userId, txId, date, 0, credit)
 
-			db.SaveTransaction(conn, userId, txId, date, 0, credit)
+			db.SaveTransaction(conn, dataTransactions.UserId, dataTransactions.Id, dataTransactions.CreationDate, dataTransactions.Transaction.Debit, dataTransactions.Transaction.Credit)
 
 		} else if strings.HasPrefix(columns[3], "-") {
 			monto, err := calculations.ObtenerMonto(columns[3])
@@ -56,10 +61,11 @@ func main() {
 				log.Print(err)
 				continue
 			}
-			debit := monto
-			fmt.Printf("el saldo es : %v %v %v %v %v\n", userId, txId, date, debit, 0)
+			dataTransactions.Transaction.Credit = 0
+			dataTransactions.Transaction.Debit = monto
+			//fmt.Printf("el saldo es : %v %v %v %v %v\n", userId, txId, date, debit, 0)
 
-			//saveTransaction(conn, uuid.MustParse(userId), uuid.MustParse(txId), date, debit, 0)
+			//db.SaveTransaction(conn, dataTransactions.UserId, dataTransactions.Id, dataTransactions.CreationDate, dataTransactions.Transaction.Debit, dataTransactions.Transaction.Credit)
 		}
 
 	}
