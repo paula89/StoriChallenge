@@ -1,0 +1,37 @@
+version: '3.1'
+
+networks:
+  app-network-public:
+    driver: bridge
+
+volumes:
+  db-data:
+
+services:
+
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Stori2024!!
+      MYSQL_DATABASE: Transactions
+    networks:
+      - app-network-public
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+
+  sendemails:
+    build: .
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - app-network-public
+    depends_on:
+      - db

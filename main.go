@@ -49,6 +49,7 @@ func main() {
 		dataTransactions.CreationDate = date
 		numTransactionsByMonth[date.Month().String()]++
 		if strings.HasPrefix(columns[3], "+") {
+			// uint
 			monto, err := calculations.ObtenerMonto(columns[3])
 			if err != nil {
 				log.Print(err)
