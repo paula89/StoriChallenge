@@ -7,4 +7,3 @@ CREATE TABLE IF NOT EXISTS
               Credit        double      NOT NULL,
               PRIMARY KEY (Id)
        );
-

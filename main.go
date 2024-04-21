@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"sendEmails/calculations"
 	csvDataFile "sendEmails/csv"
-	"sendEmails/db"
 )
 
 const layout = "2006/01/02"
@@ -17,7 +16,7 @@ const layout = "2006/01/02"
 var dataTransactions csvDataFile.DataTransactions
 
 func main() {
-	conn := db.OpenConn()
+	//conn := db.OpenConn()
 	rows := 0
 	totalBalance := 0.0
 	numTransactionsByMonth := make(map[string]int)
@@ -61,7 +60,7 @@ func main() {
 			avgCreditByMonth[date.Month().String()] += monto
 			//fmt.Printf("el saldo es : %v %v %v %v %v \n", userId, txId, date, 0, credit)
 
-			db.SaveTransaction(conn, dataTransactions.UserId, dataTransactions.Id, dataTransactions.CreationDate, dataTransactions.Transaction.Debit, dataTransactions.Transaction.Credit)
+			//db.SaveTransaction(conn, dataTransactions.UserId, dataTransactions.Id, dataTransactions.CreationDate, dataTransactions.Transaction.Debit, dataTransactions.Transaction.Credit)
 
 		} else if strings.HasPrefix(columns[3], "-") {
 			monto, err := calculations.ObtenerMonto(columns[3])

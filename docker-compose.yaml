@@ -6,6 +6,7 @@ networks:
 
 volumes:
   db-data:
+  emails:
 
 services:
 
@@ -28,6 +29,7 @@ services:
 
   sendemails:
     build: .
+    command: /bin/sh -c "sendEmails; tail -f /dev/null"
     restart: always
     ports:
       - 8080:8080
@@ -35,3 +37,5 @@ services:
       - app-network-public
     depends_on:
       - db
+    volumes:
+      - ./emailOutput:/opt/emails
