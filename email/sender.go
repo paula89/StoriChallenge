@@ -11,7 +11,7 @@ import (
 
 // getHtml represents the content of templateEmail.html. The templateEmail.html is only for visualization
 func getHtml() string {
-	return "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Test email</title>\n</head>\n<body>\n    <h1>Resume bank account</h1>\n\n    <div class=\"jumbotron\">\n        <h1 class=\"display-4\">Bank account summary</h1>\n        <hr class=\"my-4\">\n        <div>\n            <ul>\n                <li>Total balance {{.totalBalance}}</li>\n                <li>{{.avg}}</li>\n            </ul>\n        </div>\n\n    </div>\n\n</body>\n</html>"
+	return "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Resume bank account</title>\n</head>\n<body>\n    <h1>Resume bank account</h1>\n\n    <div>\n        <h1 class=\"display-4\">Bank account summary</h1>\n        <hr class=\"my-4\">\n        <div>\n            <ul>\n                <li>Total balance {{.totalBalance}}</li>\n                <li>{{.avg}}</li>\n            </ul>\n        </div>\n\n    </div>\n\n</body>\n</html>"
 }
 
 // SendResumeByEmail create an html string with all the calculation values
