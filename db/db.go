@@ -17,6 +17,7 @@ func SaveTransaction(db *sql.DB, dataTransaction csvDataFile.DataTransactions) {
 	}
 }
 
+//saveTxInDb executes an insert query
 func saveTxInDb(db *sql.DB, dataTransaction csvDataFile.DataTransactions) error {
 	_, err := db.Exec("INSERT INTO StoriChallenge.Transactions (Id, UserId, CreationDate, Debit, Credit) VALUES (?, ?, ?, ?, ?)",
 		dataTransaction.Id, dataTransaction.UserId, dataTransaction.CreationDate, dataTransaction.Transaction.Debit, dataTransaction.Transaction.Credit)

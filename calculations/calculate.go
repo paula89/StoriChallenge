@@ -14,6 +14,7 @@ type Results struct {
 	AvgTxDebitByMonth      map[string]int
 }
 
+//GetAmount converts string to float
 func GetAmount(transaction string) (float64, error) {
 	tx := transaction[1:len(transaction)]
 	amount, err := strconv.ParseFloat(tx, 64)

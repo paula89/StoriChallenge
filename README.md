@@ -14,8 +14,7 @@ How to run :
 -   Open a terminal pointing to the StoriChallenge folder
 -   run ´docker-compose up´
 -   Visualize the logs in the terminal
--   Visualize the email in the email folder
--   Right click and open email.html in a browser
+-   Visualize the email in the logs
 
 
 Logs

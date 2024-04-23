@@ -9,18 +9,18 @@ import (
 	"sendEmails/calculations"
 )
 
-// getHtml represents the content of templateEmail.html
+// getHtml represents the content of templateEmail.html. The templateEmail.html is only for visualization
 func getHtml() string {
 	return "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Test email</title>\n</head>\n<body>\n    <h1>Resume bank account</h1>\n\n    <div class=\"jumbotron\">\n        <h1 class=\"display-4\">Bank account summary</h1>\n        <hr class=\"my-4\">\n        <div>\n            <ul>\n                <li>Total balance {{.totalBalance}}</li>\n                <li>{{.avg}}</li>\n            </ul>\n        </div>\n\n    </div>\n\n</body>\n</html>"
 }
 
+// SendResumeByEmail create an html string with all the calculation values
 func SendResumeByEmail(results calculations.Results) {
 	lines := getHtml()
 
 	lines = strings.Replace(lines, "{{.totalBalance}}", strconv.FormatFloat(results.TotalBalance, 'f', -1, 64), -1)
 	avg := ""
 
-	log.Printf("avg ::: %v", results.AvgCreditByMonth)
 	for month, numTransactions := range results.NumTransactionsByMonth {
 		avg += "<li> Number of transactions in " + month + " " + strconv.Itoa(numTransactions) + "</li>"
 	}
