@@ -15,6 +15,7 @@ How to run :
 -   run ´docker-compose up´
 -   Visualize the logs in the terminal
 -   Visualize the email in the email folder
+-   Right click and open email.html in a browser
 
 
 Logs
