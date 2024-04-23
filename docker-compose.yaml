@@ -5,7 +5,6 @@ networks:
     driver: bridge
 
 volumes:
-  db-data:
   emails:
 
 services:
@@ -24,15 +23,11 @@ services:
     expose:
       - '3306'
     volumes:
-      - db-data:/var/lib/mysql
       - ./mysql-init:/docker-entrypoint-initdb.d
 
   sendemails:
     build: .
-    command: /bin/sh -c "sendEmails; tail -f /dev/null"
     restart: always
-    ports:
-      - 8080:8080
     networks:
       - app-network-public
     depends_on:

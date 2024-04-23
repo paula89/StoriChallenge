@@ -3,8 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>Test email</title>
+    <script src="balances.js"></script>
 </head>
 <body>
-    <h1>Correo test</h1>
+    <h1>Resume bank account</h1>
+
+    <div class="jumbotron">
+        <h1 class="display-4">Hello, world!</h1>
+        <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
+        <hr class="my-4">
+        <div id>
+            <ul id="balances" >
+                <li>Total balance {{.totalBalance}}</li>
+                <li>Total Average debit amount {{.totalBalance}}</li>
+                <li>Average credit amount {{.totalBalance}}</li>
+            </ul>
+        </div>
+
+    </div>
+
 </body>
 </html>
