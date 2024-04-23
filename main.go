@@ -16,6 +16,7 @@ import (
 const layout = "2006/01/02"
 
 var dataTransactions csvDataFile.DataTransactions
+var results calculations.Results
 
 func init() {
 	log.Printf("Starting ...")
@@ -30,14 +31,13 @@ func main() {
 	}
 
 	lines := strings.Split(csvDataFile.CsvData, "\r\n")
-
 	rows := 0
-	totalBalance := 0.0
-	numTransactionsByMonth := make(map[string]int)
-	avgCreditByMonth := make(map[string]float64)
-	avgDebitByMonth := make(map[string]float64)
-	avgTxCreditByMonth := make(map[string]int)
-	avgTxDebitByMonth := make(map[string]int)
+
+	results.NumTransactionsByMonth = make(map[string]int)
+	results.AvgCreditByMonth = make(map[string]float64)
+	results.AvgDebitByMonth = make(map[string]float64)
+	results.AvgTxCreditByMonth = make(map[string]int)
+	results.AvgTxDebitByMonth = make(map[string]int)
 
 	for _, line := range lines {
 		rows = rows + 1
@@ -63,59 +63,39 @@ func main() {
 		}
 		dataTransactions.CreationDate = date
 
-		numTransactionsByMonth[date.Month().String()]++
+		results.NumTransactionsByMonth[date.Month().String()]++
 
 		amount, err := calculations.GetAmount(columns[3])
 		if err != nil {
-			log.Print(err)
-			continue
+			log.Fatalf("error getting the amount %v", err)
 		}
 		if strings.HasPrefix(columns[3], "+") {
 			// option: use uint to the amounts.
 			dataTransactions.Transaction.Credit = amount
 			dataTransactions.Transaction.Debit = 0
-			totalBalance += amount
-			avgCreditByMonth[date.Month().String()] += amount
-			avgTxCreditByMonth[date.Month().String()] += 1
-			//fmt.Printf("el saldo es : %v %v %v %v %v \n", userId, txId, date, 0, credit)
+			results.TotalBalance += amount
+			results.AvgCreditByMonth[date.Month().String()] += amount
+			results.AvgTxCreditByMonth[date.Month().String()] += 1
 
 			db.SaveTransaction(conn, dataTransactions)
 
 		} else if strings.HasPrefix(columns[3], "-") {
 			dataTransactions.Transaction.Credit = 0
 			dataTransactions.Transaction.Debit = amount
-			totalBalance -= amount
-			avgDebitByMonth[date.Month().String()] -= amount
-			avgTxDebitByMonth[date.Month().String()] += 1
-			//fmt.Printf("el saldo es : %v %v %v %v %v\n", userId, txId, date, debit, 0)
+			results.TotalBalance -= amount
+			results.AvgDebitByMonth[date.Month().String()] -= amount
+			results.AvgTxDebitByMonth[date.Month().String()] += 1
 
 			db.SaveTransaction(conn, dataTransactions)
 		}
 
 		// Calculate debit and credit avg by month
-		for month := range numTransactionsByMonth {
-			avgCreditByMonth[month] /= float64(numTransactionsByMonth[month])
-			avgDebitByMonth[month] /= float64(numTransactionsByMonth[month])
+		for month := range results.NumTransactionsByMonth {
+			results.AvgCreditByMonth[month] /= float64(results.AvgTxCreditByMonth[month])
+			results.AvgDebitByMonth[month] /= float64(results.AvgTxDebitByMonth[month])
 		}
-
 	}
 
-	err = email.SendResumeByEmail(totalBalance, avgTxCreditByMonth, avgTxDebitByMonth, avgCreditByMonth, avgDebitByMonth)
-	if err != nil {
-		log.Fatalf("Error sending email: %v", err)
-	}
+	email.SendResumeByEmail(results)
 
-	/*
-				// Enviar resumen por correo electrónico
-				err = enviarResumenPorCorreo(creditos, debitos, saldo)
-				if err != nil {
-					log.Fatalf("Error al enviar resumen por correo electrónico: %v", err)
-				}
-			echo "hola" >> /opt/emails/test.txt
-
-		// Recorrer el mapa numTransactionsByMonth
-			for month, numTransactions := range numTransactionsByMonth {
-				log.Printf("Mes: %s, Número de transacciones: %d\n", month, numTransactions)
-			}
-	*/
 }

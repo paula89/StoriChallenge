@@ -12,11 +12,12 @@ func SaveTransaction(db *sql.DB, dataTransaction csvDataFile.DataTransactions) {
 	err := saveTxInDb(db, dataTransaction)
 	if err != nil {
 		log.Fatalf("Error saving transactions in the db: %v", err)
+	} else {
+		log.Printf("New row inserted in the db")
 	}
 }
 
 func saveTxInDb(db *sql.DB, dataTransaction csvDataFile.DataTransactions) error {
-	log.Printf("el dataTransaction es : %v", dataTransaction)
 	_, err := db.Exec("INSERT INTO StoriChallenge.Transactions (Id, UserId, CreationDate, Debit, Credit) VALUES (?, ?, ?, ?, ?)",
 		dataTransaction.Id, dataTransaction.UserId, dataTransaction.CreationDate, dataTransaction.Transaction.Debit, dataTransaction.Transaction.Credit)
 

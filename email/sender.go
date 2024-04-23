@@ -1,41 +1,45 @@
 package email
 
 import (
-	"bytes"
-	"fmt"
-	"html/template"
+	"io/ioutil"
 	"log"
-	"os"
+	"strconv"
+	"strings"
+
+	"sendEmails/calculations"
 )
 
-type Page struct {
-	Title string
-	Body  []byte
+// getHtml represents the content of templateEmail.html
+func getHtml() string {
+	return "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Test email</title>\n</head>\n<body>\n    <h1>Resume bank account</h1>\n\n    <div class=\"jumbotron\">\n        <h1 class=\"display-4\">Bank account summary</h1>\n        <hr class=\"my-4\">\n        <div>\n            <ul>\n                <li>Total balance {{.totalBalance}}</li>\n                <li>{{.avg}}</li>\n            </ul>\n        </div>\n\n    </div>\n\n</body>\n</html>"
 }
 
-func save(body []byte) error {
-	filename := "email/email" + ".html"
-	return os.WriteFile(filename, body, 0600)
-}
+func SendResumeByEmail(results calculations.Results) {
+	lines := getHtml()
 
-func SendResumeByEmail(totalBalance float64, avgTxCreditByMonth, avgTxDebitByMonth map[string]int, avgCreditByMonth, avgDebitByMonth map[string]float64) error {
-	t, err := template.ParseFiles("email/templateEmail.html")
-	if err != nil {
-		log.Fatalf("error parsing file %v", err)
-		return err
+	lines = strings.Replace(lines, "{{.totalBalance}}", strconv.FormatFloat(results.TotalBalance, 'f', -1, 64), -1)
+	avg := ""
+
+	log.Printf("avg ::: %v", results.AvgCreditByMonth)
+	for month, numTransactions := range results.NumTransactionsByMonth {
+		avg += "<li> Number of transactions in " + month + " " + strconv.Itoa(numTransactions) + "</li>"
 	}
-	fmt.Printf("t %v", t)
-	buf := new(bytes.Buffer)
-	err = t.Execute(buf, map[string]interface{}{"data": totalBalance}) //strconv.FormatFloat(totalBalance, 'f', -1, 64))
-	if err != nil {
-		log.Fatalf("error adding variables %v", err)
-		return err
+	for month, credit := range results.AvgCreditByMonth {
+		avg += "<li> Total Average credit amount " + month + " " + strconv.FormatFloat(credit, 'f', -1, 64) + "</li>"
 	}
-	err = save(buf.Bytes())
-	if err != nil {
-		log.Fatalf("error writing email %v", err)
-		return err
+	for month, debit := range results.AvgDebitByMonth {
+		avg += "<li> Total Average debit amount " + month + " " + strconv.FormatFloat(debit, 'f', -1, 64) + "</li>"
 	}
-	fmt.Printf("Email Sended")
-	return nil
+
+	lines = strings.Replace(lines, "<li>{{.avg}}</li>", avg, -1)
+
+	log.Printf("new html email %v", lines)
+
+	err := ioutil.WriteFile("outputEmail.html", []byte(lines), 0644)
+	if err != nil {
+		log.Fatalf("error writing the email %v", err)
+	} else {
+		log.Printf("Email sended %v", lines)
+	}
+
 }

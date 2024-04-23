@@ -5,6 +5,15 @@ import (
 	"strconv"
 )
 
+type Results struct {
+	TotalBalance           float64
+	NumTransactionsByMonth map[string]int
+	AvgCreditByMonth       map[string]float64
+	AvgDebitByMonth        map[string]float64
+	AvgTxCreditByMonth     map[string]int
+	AvgTxDebitByMonth      map[string]int
+}
+
 func GetAmount(transaction string) (float64, error) {
 	tx := transaction[1:len(transaction)]
 	amount, err := strconv.ParseFloat(tx, 64)
